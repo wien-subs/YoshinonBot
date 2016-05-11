@@ -624,4 +624,4 @@ class bot(ch.RoomManager):
 rooms = ["wien-subsfansub"]
 
 if __name__ == "__main__":
-    bot.easy_start(rooms, "Yoshinonbot", "Florin12")
+    bot.easy_start(rooms, "", "")
