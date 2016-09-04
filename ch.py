@@ -228,7 +228,7 @@ class _ANON_PM_OBJECT:
     while self._rbuf.find(b"\x00") != -1:
       data = self._rbuf.split(b"\x00")
       for food in data[:-1]:
-        self._process(food.decode('ascii', 'ignore').rstrip("\r\n"))
+        self._process(food.decode(errors="replace").rstrip("\r\n"))
       self._rbuf = data[-1]
 
   def _process(self, data):
@@ -444,7 +444,7 @@ class PM:
     while self._rbuf.find(b"\x00") != -1:
       data = self._rbuf.split(b"\x00")
       for food in data[:-1]:
-        self._process(food.decode('ascii', 'ignore').rstrip("\r\n"))
+        self._process(food.decode(errors="replace").rstrip("\r\n"))
       self._rbuf = data[-1]
 
   def _process(self, data):
@@ -833,7 +833,7 @@ class Room:
     while self._rbuf.find(b"\x00") != -1:
       data = self._rbuf.split(b"\x00")
       for food in data[:-1]:
-        self._process(food.decode('ascii', 'ignore').rstrip("\r\n"))
+        self._process(food.decode(errors="replace").rstrip("\r\n"))
       self._rbuf = data[-1]
 
   def _process(self, data):
@@ -939,8 +939,6 @@ class Room:
     i = args[5]
     unid = args[4]
     user = User(name)
-    if puid:
-      user.updatePuid(puid)
     #Create an anonymous message and queue it because msgid is unknown.
     if f: fontColor, fontFace, fontSize = _parseFont(f)
     else: fontColor, fontFace, fontSize = None, None, None
@@ -955,6 +953,7 @@ class Room:
       fontFace = fontFace,
       fontSize = fontSize,
       unid = unid,
+      puid = puid,
       room = self
     )
     self._mqueue[i] = msg
@@ -991,8 +990,6 @@ class Room:
     i = args[5]
     unid = args[4]
     user = User(name)
-    if puid:
-      user.updatePuid(puid)
     #Create an anonymous message and queue it because msgid is unknown.
     if f: fontColor, fontFace, fontSize = _parseFont(f)
     else: fontColor, fontFace, fontSize = None, None, None
@@ -1007,6 +1004,7 @@ class Room:
       fontFace = fontFace,
       fontSize = fontSize,
       unid = unid,
+      puid = puid,
       room = self
     )
     self._i_log.append(msg)
@@ -1030,21 +1028,19 @@ class Room:
     if name == "none": return
     user = User(name)
     puid = args[2]
-    if puid:
-      user.updatePuid(puid)
 
     if args[0] == "0": #leave
       user.removeSessionId(self, args[1])
       self._userlist.remove(user)
       if user not in self._userlist or not self.mgr._userlistEventUnique:
-        self._callEvent("onLeave", user)
+        self._callEvent("onLeave", user, puid)
     else: #join
       user.addSessionId(self, args[1])
       if user not in self._userlist: doEvent = True
       else: doEvent = False
       self._userlist.append(user)
       if doEvent or not self.mgr._userlistEventUnique:
-        self._callEvent("onJoin", user)
+        self._callEvent("onJoin", user, puid)
 
   def _rcmd_show_fw(self, args):
     self._callEvent("onFloodWarning")
@@ -1732,7 +1728,7 @@ class RoomManager:
     """
     pass
 
-  def onJoin(self, room, user):
+  def onJoin(self, room, user, puid):
     """
     Called when a user joins. Anonymous users get ignored here.
 
@@ -1740,10 +1736,12 @@ class RoomManager:
     @param room: room where the event occured
     @type user: User
     @param user: the user that has joined
+    @type puid: str
+    @param puid: the personal unique id for the user
     """
     pass
 
-  def onLeave(self, room, user):
+  def onLeave(self, room, user, puid):
     """
     Called when a user leaves. Anonymous users get ignored here.
 
@@ -1751,6 +1749,8 @@ class RoomManager:
     @param room: room where the event occured
     @type user: User
     @param user: the user that has left
+    @type puid: str
+    @param puid: the personal unique id for the user
     """
     pass
 
@@ -2235,7 +2235,6 @@ class _User:
   ####
   def __init__(self, name, **kw):
     self._name = name.lower()
-    self._puid = ""
     self._sids = dict()
     self._msgs = list()
     self._nameColor = "000"
@@ -2252,7 +2251,6 @@ class _User:
   # Properties
   ####
   def _getName(self): return self._name
-  def _getPuid(self): return self._puid
   def _getSessionIds(self, room = None):
     if room:
       return self._sids.get(room, set())
@@ -2266,7 +2264,6 @@ class _User:
   def _getNameColor(self): return self._nameColor
 
   name = property(_getName)
-  puid = property(_getPuid)
   sessionids = property(_getSessionIds)
   rooms = property(_getRooms)
   roomnames = property(_getRoomNames)
@@ -2305,9 +2302,6 @@ class _User:
         return False
     except KeyError:
       return False
-
-  def updatePuid(self, puid):
-    self._puid = puid
 
   ####
   # Repr
@@ -2357,6 +2351,8 @@ class Message:
     self._raw = ""
     self._ip = None
     self._unid = ""
+    self._puid = ""
+    self._uid = ""
     self._nameColor = "000"
     self._fontSize = 12
     self._fontFace = "0"
@@ -2380,6 +2376,7 @@ class Message:
   def _getRoom(self): return self._room
   def _getRaw(self): return self._raw
   def _getUnid(self): return self._unid
+  def _getPuid(self): return self._puid
 
   msgid = property(_getId)
   time = property(_getTime)
@@ -2393,3 +2390,5 @@ class Message:
   raw = property(_getRaw)
   nameColor = property(_getNameColor)
   unid = property(_getUnid)
+  puid = property(_getPuid)
+  uid = property(_getPuid) # other library use uid so we create an alias

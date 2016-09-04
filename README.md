@@ -1,5 +1,5 @@
 # YoshinonBot
-An simple bot for chatango , almost for fansubs.
+An complexe bot for chatango , almost for fansubs.
 
 ## Requirement
 - All operation system with python support
@@ -11,7 +11,17 @@ An simple bot for chatango , almost for fansubs.
 - Money system called "Belly"
 - YouTube video search
 - Get new post as list ( for my site, probability you need to recofing )
-- MySQL storage (that its mutch better then simple files)
-- AnimeList (that will read anime from files and give it to user (random))
+- MySQL/MariaDB storage (that its mutch better then simple files)
 - Access system with five(5) ranks
 - Posibilty to clear all mesaje for specify user (that will request access)
+- Private Message
+- Possibility to invite users
+- Support for MariaDB
+- An litte RPG game, try to see /create or /make
+- Now all command request prefix "/" or "$"
+- Possibility to transfer belly to specify user
+
+## ToDo
+- More PvP system
+- Move myanimelist to local database
+- Move users mal to local database
