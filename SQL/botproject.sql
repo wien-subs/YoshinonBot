@@ -1,3 +1,18 @@
+/*
+Navicat MySQL Data Transfer
+
+Source Server         : local
+Source Server Version : 100113
+Source Host           : localhost:3306
+Source Database       : botproject
+
+Target Server Type    : MYSQL
+Target Server Version : 100113
+File Encoding         : 65001
+
+Date: 2016-12-11 20:40:16
+*/
+
 SET FOREIGN_KEY_CHECKS=0;
 
 -- ----------------------------
@@ -53,7 +68,34 @@ CREATE TABLE `inventory` (
   `leggis` varchar(255) DEFAULT 'no',
   `boots` varchar(255) DEFAULT 'no',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+
+-- ----------------------------
+-- Table structure for item
+-- ----------------------------
+DROP TABLE IF EXISTS `item`;
+CREATE TABLE `item` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `desc` text NOT NULL,
+  `class` varchar(255) NOT NULL,
+  `meta-attack` int(3) DEFAULT NULL,
+  `meta-hp` int(3) DEFAULT NULL,
+  `price` int(3) DEFAULT NULL,
+  `price-sell` int(3) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- ----------------------------
+-- Table structure for setting
+-- ----------------------------
+DROP TABLE IF EXISTS `setting`;
+CREATE TABLE `setting` (
+  `id` int(2) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `value` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Table structure for userdata
@@ -72,5 +114,6 @@ CREATE TABLE `userdata` (
   `win` int(3) DEFAULT '0',
   `lose` int(3) DEFAULT '0',
   `bank` bigint(255) DEFAULT '0',
+  `battlecd` bigint(255) NOT NULL DEFAULT '20',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=922 DEFAULT CHARSET=latin1;
