@@ -1,19 +1,28 @@
 /*
-Navicat MySQL Data Transfer
-
-Source Server         : local
-Source Server Version : 100113
-Source Host           : localhost:3306
-Source Database       : botproject
-
+Source Server         : WS BotChatango
+Source Server Version : 100029
+Source Host           : HiddenByAdmin
+Source Database       : ws_BotProject
 Target Server Type    : MYSQL
-Target Server Version : 100113
-File Encoding         : 65001
-
-Date: 2016-12-11 20:40:16
+Date: 2017-05-09 19:21:48
 */
 
 SET FOREIGN_KEY_CHECKS=0;
+
+-- ----------------------------
+-- Table structure for announce
+-- ----------------------------
+DROP TABLE IF EXISTS `announce`;
+CREATE TABLE `announce` (
+  `id` int(3) NOT NULL AUTO_INCREMENT,
+  `user` varchar(255) DEFAULT NULL,
+  `text` text,
+  `count` int(3) DEFAULT '1',
+  `max` int(3) DEFAULT NULL,
+  `data` varchar(50) DEFAULT NULL,
+  `enable` int(1) DEFAULT '1',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Table structure for blacklist
@@ -36,7 +45,7 @@ CREATE TABLE `definiti` (
   `data` varchar(100) NOT NULL,
   `autor` varchar(200) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Table structure for inventory
@@ -61,14 +70,14 @@ CREATE TABLE `inventory` (
   `class` int(1) DEFAULT '0',
   `power` int(10) DEFAULT '0',
   `hp` int(10) DEFAULT '0',
-  `helmet` varchar(255) DEFAULT 'no',
-  `chestplate` varchar(255) DEFAULT 'no',
-  `leftarm` varchar(255) DEFAULT 'no',
-  `rightarm` varchar(255) DEFAULT 'no',
-  `leggis` varchar(255) DEFAULT 'no',
-  `boots` varchar(255) DEFAULT 'no',
+  `helmet` int(2) DEFAULT '0',
+  `chestplate` int(2) DEFAULT '0',
+  `leftarm` int(2) DEFAULT '0',
+  `rightarm` int(2) DEFAULT '0',
+  `leggis` int(2) DEFAULT '0',
+  `boots` int(2) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Table structure for item
@@ -78,13 +87,14 @@ CREATE TABLE `item` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `desc` text NOT NULL,
-  `class` varchar(255) NOT NULL,
+  `slot` int(1) NOT NULL DEFAULT '0',
+  `class` int(1) NOT NULL,
   `meta-attack` int(3) DEFAULT NULL,
   `meta-hp` int(3) DEFAULT NULL,
   `price` int(3) DEFAULT NULL,
   `price-sell` int(3) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Table structure for setting
@@ -116,4 +126,4 @@ CREATE TABLE `userdata` (
   `bank` bigint(255) DEFAULT '0',
   `battlecd` bigint(255) NOT NULL DEFAULT '20',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=922 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=1479 DEFAULT CHARSET=latin1;

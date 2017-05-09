@@ -39,6 +39,19 @@ class bot(ch.RoomManager):
 
     def onMessage(self, room, user, message):
         self.safePrint(user.name + ': ' + message.body)
+        if(len(message.body) > 2):
+            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
+            sql = conn.cursor()
+            sql.execute("select * from `announce` where `enable`='1'")
+            result = sql.fetchall()
+            for row in result:
+                id = int(row[0])
+                if(int(announcegetcount(id)) >= int(announcegetmax(id))):
+                    room.message(announcegetdata(id),True)
+                    announceupdatecount(id)
+                    announcereset(id)
+                else:
+                    announceupdatecount(id)
         if(isbl(user.name)):
             msgdata = "False"
         else:
@@ -59,7 +72,6 @@ class bot(ch.RoomManager):
             if(getAccess(user.name) > 3):
                 args = args.lower()
                 ar = args.split(" ", 1)
-                print(ar)
                 if(len(ar) > 0):
                     if(ar[0] == "offline"):
                         if(ar[1].capitalize() == "True" or ar[1].capitalize() == "False"):
@@ -80,13 +92,37 @@ class bot(ch.RoomManager):
                     room.message("Folosire corecta $setting [nume-setare] [True/False/utilizator]")
             else:
                 room.message("Nu ai suficent access :(")
+        elif cmd=="/announce":
+            if(getAccess(user.name) > 2):
+                args = escape(message.body)
+                args = args.lower()
+                ar = args.split(" ", 3)
+                if(len(ar) > 2):
+                    if(ar[1] == "add"):
+                        if(ar[2] >= 10):
+                            if(len(ar[3]) > 1):
+                                data = datetime().now().strftime("%Y-%m-%d")
+                                dosql("INSERT INTO `announce` (`user`,`text`,`max`,`data`,`enable`) VALUES ('"+user.name+"','"+ar[3]+"','"+format(ar[2])+"','"+data+"','1')")
+                                room.message("Anuntul a fost adaugat si activat")
+                            else:
+                                room.message("Folosire corecta: /announce add IntevalMesaje Mesajul")
+                        else:
+                            room.message("Folosire corecta: /announce add IntevalMesaje Mesajul")
+                    elif(ar[1] == "remove"):
+                        room.message("To Do")
+                    else:
+                        room.message("Folosire corecta: /announce add/remove")
+                else:
+                    room.message("Folosire corecta: /announce add IntevalMesaje Mesajul")
+            else:
+                room.message("Access Denied")
         elif cmd=="/flip":
             room.message("(╯°□°）╯︵ ┻━┻")
         elif cmd=="/back":
             room.message("┬─┬﻿ ノ( ゜-゜ノ)")
         elif cmd=="(╯°□°）╯︵ ┻━┻":
             room.message("Sir, put the table BACK! ┬─┬﻿ ノ( ゜-゜ノ)")
-        elif cmd=="$restart":
+        elif cmd=="$reboot":
             if(getAccess(user.name) > 3):
                 room.deleteUser(ch.User(user.name))
                 room.message("Restarting system.... <br/> Reboot in 5 seconds", True)
@@ -214,7 +250,7 @@ class bot(ch.RoomManager):
                             room.message("Nu am gasit utilizatorul sau este deja in blacklist")
                             room.deleteUser(ch.User(user.name))
                     elif(ar[0] == "list" or ar[0] == "ls"):
-                        conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+                        conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
                         sql = conn.cursor()
                         sql.execute("Select * from `blacklist` limit 10")
                         a = 0
@@ -256,7 +292,7 @@ class bot(ch.RoomManager):
             else:
                 room.message("Utilizare corecta /slap utilizator")
         elif cmd=="/duel" or cmd=="/lupta" or cmd=="/pvp" or cmd=="/taunt":
-            conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
             sql = conn.cursor()
             ar = message.body
             if(userexist(user.name) and haveavatar(user.name)):
@@ -266,7 +302,7 @@ class bot(ch.RoomManager):
                         if(user.name == data[1]):
                             room.message("For Fuck's Sake <b>[!]</b> Nu te poti sinucide :(", True)
                         else:
-                            conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+                            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
                             sql = conn.cursor()
                             sql.execute("SELECT * FROM `userdata` where `user`='"+user.name+"'")
                             row = sql.fetchone()
@@ -359,7 +395,7 @@ class bot(ch.RoomManager):
             else:
                 room.message("Trebuie sa ai avatar pentru a te duela!")                        
         elif cmd=="/create" or cmd=="/make":
-            conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
             sql = conn.cursor()
             args=escape(message.body)
             if(userexist(user.name)):
@@ -416,7 +452,7 @@ class bot(ch.RoomManager):
             else:
                 return 0
         elif cmd=="/toppvp" or cmd=="/topduel" or cmd=="/duelisti" or cmd=="/topcampioni" or cmd=="/topavatar":
-            conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
             sql = conn.cursor()
             sql.execute("select * from `userdata` order by `win` desc limit 10")
             lista=[]
@@ -436,7 +472,7 @@ class bot(ch.RoomManager):
             sql.close()
             conn.close()
         elif cmd=="/topbank" or cmd=="/tb":
-            conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
             sql = conn.cursor()
             sql.execute("select * from `userdata` order by `bank` desc limit 10")
             lista=[]
@@ -456,7 +492,7 @@ class bot(ch.RoomManager):
             sql.close()
             conn.close()
         elif cmd=="/bank" or cmd=="/banca":
-            conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
             sql = conn.cursor()
             sql.execute("select * from `userdata` where `user`='"+user.name+"'")
             args=message.body
@@ -516,7 +552,7 @@ class bot(ch.RoomManager):
             else:
                 return 0
         elif cmd=="/bet":
-            conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
             sql = conn.cursor()
             sql.execute("select * from `userdata` where `user`='"+user.name+"'")
             value=args.lower()
@@ -560,7 +596,7 @@ class bot(ch.RoomManager):
             else:
                 room.message("Nu te ascult :( noob's")
         elif cmd=="$setaccess":
-            conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
             sql = conn.cursor()
             room.deleteUser(ch.User(user.name))
             if getAccess(user.name) > 4:
@@ -588,56 +624,60 @@ class bot(ch.RoomManager):
             else:
                 room.message("Nu ai permisune! :(")
         elif cmd=="/fura" or cmd=="/jefuieste" or cmd=="/asedieaza":
-            conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
             sql = conn.cursor()
             args=args.lower()
             room.deleteUser(ch.User(user.name))
             sql.execute("SELECT * FROM `userdata` where `user`='"+user.name+"'")
+            ar = args[0:].split(" ", 1)
             if(sql.rowcount == 1):
-                row = sql.fetchone()
-                coin = row[2]
-                timedb = int(row[7])
-                ntime = int(time.time())
-                timecalc = ntime-timedb
-                ar = args[0:].split(" ", 1)
-                paradatul = ar[0]
-                sql.execute("SELECT * FROM `userdata` where `user`='"+paradatul+"'")
-                if(sql.rowcount == 1):
-                    row = sql.fetchone()
-                    hcoin = row[2]
-                    ptime = int(row[7])
-                    if(hcoin >= 50):
-                        if(timecalc > 172800):
-                            value = random.randint(10,65)
-                            steal = hcoin * value / 100
-                            steal = int(steal)
-                            hcoin = hcoin - steal
-                            ptimec = ntime-ptime
-                            if(ptimec < 14400):
-                                ptime = ptime
-                            else:
-                                ptimp = ntime + 14400
-                            sql.execute("update `userdata` set `money`="+format(hcoin)+", `laststeal`="+format(int(ptime))+" where `user`='"+paradatul+"'")
-                            conn.commit()
-                            coin = coin + steal
-                            sql.execute("update `userdata` set `money`="+format(coin)+", `laststeal`="+format(ntime)+" where `user`='"+user.name+"'")
-                            conn.commit()
-                            room.message("<b>"+user.name+"</b> L-ai pradat pe <b>"+paradatul+"</b> și i-ai furat "+format(steal)+" belly. Acum ai "+format(coin)+" belly <br/> I-am redus timpul lui "+paradatul+" la 2 ore pentru praduire", True)
-                            self.pm.message(ch.RoomManager(paradatul), "Ai fost jefuit de "+user.name+" care ți-a furat "+format(steal)+" belly, acum ai mai rămas cu "+format(hcoin)+" belly")
-                        else:
-                            ramas = 172800 - timecalc
-                            m, s = divmod(ramas, 60)
-                            h, m = divmod(m, 60)
-                            d, h = divmod(h, 24)
-                            room.message("Mai ai de asteptat "+format(d)+" zile "+format(h)+" ore "+format(m)+" minute "+format(s)+" secunde , nu e bine sa furi atata de mult :)")
-                    else:
-                        room.message("Utilizatorul "+paradatul+" nu merita sa fie jefuit! E prea sarac!")
+                if(ar[0] == user.name):
+                    txt = ["Esti reatadat? Te simti singur? Atata de singur incat incerci sa te furi singur?", "Domnule draga mare e gradina domnului dar din pacate ai sarit gardu!", "Serios? vrei sa-ti furi propi bani?", "Dragul meu aici este Wien-Subs nu Spitalul de psihiatrie numarul 9, nu te mai fura singur"]
+                    room.message(random.choice(txt))
                 else:
-                    room.message("Nu am gasit utilizatorul cu numele <b>"+paradatul+"</b>", True)
+                    row = sql.fetchone()
+                    coin = row[2]
+                    timedb = int(row[7])
+                    ntime = int(time.time())
+                    timecalc = ntime-timedb
+                    paradatul = ar[0]
+                    sql.execute("SELECT * FROM `userdata` where `user`='"+paradatul+"'")
+                    if(sql.rowcount == 1):
+                        row = sql.fetchone()
+                        hcoin = row[2]
+                        ptime = int(row[7])
+                        if(hcoin >= 50):
+                            if(timecalc > 172800):
+                                value = random.randint(10,65)
+                                steal = hcoin * value / 100
+                                steal = int(steal)
+                                hcoin = hcoin - steal
+                                ptimec = ntime-ptime
+                                if(ptimec < 14400):
+                                    ptime = ptime
+                                else:
+                                    ptimp = ntime + 14400
+                                sql.execute("update `userdata` set `money`="+format(hcoin)+", `laststeal`="+format(int(ptime))+" where `user`='"+paradatul+"'")
+                                conn.commit()
+                                coin = coin + steal
+                                sql.execute("update `userdata` set `money`="+format(coin)+", `laststeal`="+format(ntime)+" where `user`='"+user.name+"'")
+                                conn.commit()
+                                room.message("<b>"+user.name+"</b> L-ai pradat pe <b>"+paradatul+"</b> și i-ai furat "+format(steal)+" belly. Acum ai "+format(coin)+" belly <br/> I-am redus timpul lui "+paradatul+" la 2 ore pentru praduire", True)
+                                self.pm.message(ch.RoomManager(paradatul), "Ai fost jefuit de "+user.name+" care ți-a furat "+format(steal)+" belly, acum ai mai rămas cu "+format(hcoin)+" belly")
+                            else:
+                                ramas = 172800 - timecalc
+                                m, s = divmod(ramas, 60)
+                                h, m = divmod(m, 60)
+                                d, h = divmod(h, 24)
+                                room.message("Mai ai de asteptat "+format(d)+" zile "+format(h)+" ore "+format(m)+" minute "+format(s)+" secunde , nu e bine sa furi atata de mult :)")
+                        else:
+                            room.message("Utilizatorul "+paradatul+" nu merita sa fie jefuit! E prea sarac!")
+                    else:
+                        room.message("Nu am gasit utilizatorul cu numele <b>"+paradatul+"</b>", True)
             else:
                 return 0
         elif cmd=="/zar":
-            conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
             sql = conn.cursor()
             room.deleteUser(ch.User(user.name))
             sql.execute("select * from `userdata` where `user`='"+user.name+"'")
@@ -673,7 +713,7 @@ class bot(ch.RoomManager):
             else:
                 room.message("Nu te-am gasit in baza de date :(")
         elif cmd=="$setbelly":
-            conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
             sql = conn.cursor()
             room.deleteUser(ch.User(user.name))
             if getAccess(user.name) > 2:
@@ -700,7 +740,7 @@ class bot(ch.RoomManager):
             else:
                 room.message("Nu ai suficent access :(")
         elif cmd=="$setbank":
-            conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
             sql = conn.cursor()
             room.deleteUser(ch.User(user.name))
             if getAccess(user.name) > 2:
@@ -727,7 +767,7 @@ class bot(ch.RoomManager):
             else:
                 room.message("Nu ai suficent access :(")
         elif cmd=="/define":
-            conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
             sql = conn.cursor()
             if getAccess(user.name) >= 0:
                 args=message.body
@@ -777,7 +817,7 @@ class bot(ch.RoomManager):
             sql.close()
             conn.close()
         elif cmd=="/ce":
-            conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
             sql = conn.cursor()
             args=args.lower()
             if(len(args) > 1):
@@ -802,7 +842,7 @@ class bot(ch.RoomManager):
             else:
                 room.message("Folosire corecta: /ce <b>termenul</b>", True)
         elif cmd=="/tf" or cmd=="/transfera":
-            conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
             sql = conn.cursor()
             sql.execute("select * from `userdata` where `user`='"+user.name+"'")
             args=args.lower()
@@ -845,7 +885,7 @@ class bot(ch.RoomManager):
             sql.close()
             conn.close()
         elif cmd=="/top":
-            conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
             sql = conn.cursor()
             sql.execute("select * from `userdata` order by `money` desc limit 10")
             lista=[]
@@ -933,7 +973,7 @@ class bot(ch.RoomManager):
              c=c+1
           room.message("Am cautat "+args+": <br/> "+"<br/>".join(lista),True)
         elif cmd=="/eu" or cmd == "/status" or cmd=="/stats":
-            conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
             sql = conn.cursor()
             sql.execute("select * from `userdata` where `user`='"+user.name+"'")
             if(sql.rowcount == 1):
@@ -955,7 +995,7 @@ class bot(ch.RoomManager):
             else:
                 return 0
         elif cmd=="/mc" or cmd=="/belly" or cmd=="/loli":
-            conn = pymysql.connect(host='127.0.0.1', port=3306, user='wiensubs_chatangobot', passwd='MyFuckedPassword', db='wiensubs_chatangobot')
+            conn = pymysql.connect(host='databaseip', port=3306, user='DataBaseUser', passwd='DataBasePassword', db='DataBaseUser')
             sql = conn.cursor()
             sql.execute("select * from `userdata` where `user`='"+user.name+"'")
             if(sql.rowcount == 1):
@@ -1095,7 +1135,7 @@ class bot(ch.RoomManager):
         elif cmd=="/users":
             room.message("Ma joc cu: " + str(room.usercount) + " useri")
         elif cmd=="imi zice cineva un anime" or cmd=="vreau un anime" or cmd=="/anime" or cmd=="anime":
-            conn = pymysql.connect(host='127.0.0.1', port=3306, user='proiecte', passwd='IoVaD43o7n3G', db='proiecte')
+            conn = pymysql.connect(host='databaseip', port=3306, user='proiecte', passwd='IoVaD43o7n3G', db='proiecte')
             sql = conn.cursor()
             sql.execute("select uid from `anime`")
             total = int(sql.rowcount)
@@ -1117,4 +1157,4 @@ class bot(ch.RoomManager):
 rooms = ["wien-subsfansub"]
 
 if __name__ == "__main__":
-    bot.easy_start(rooms, "YoshinonBot", "MyFuckedPassword")
+    bot.easy_start(rooms, "YoshinonBot", "DataBasePassword")
